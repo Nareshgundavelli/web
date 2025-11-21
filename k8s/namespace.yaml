@@ -1,0 +1,12 @@
+# ubuntu-namespace-sa.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: webapp
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ubuntu-sa
+  namespace: webapp
+

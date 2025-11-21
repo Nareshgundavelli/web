@@ -1,0 +1,31 @@
+# ubuntu-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ubuntu-generator
+  namespace: webapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ubuntu-generator
+  template:
+    metadata:
+      labels:
+        app: ubuntu-generator
+    spec:
+      serviceAccountName: ubuntu-sa
+      containers:
+      - name: ubuntu
+        image: ubuntu:22.04
+        command: ["/bin/bash", "-c", "sleep infinity"]
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: scripts
+          mountPath: /opt/scripts
+      volumes:
+      - name: scripts
+        configMap:
+          name: ubuntu-scripts
+          defaultMode: 0777

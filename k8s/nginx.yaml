@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-server
+  namespace: webapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-server
+  template:
+    metadata:
+      labels:
+        app: nginx-server
+    spec:
+
+      # Correct IAM-enabled service account
+      serviceAccountName: s3full-access
+
+      initContainers:
+      - name: get-website
+        image: public.ecr.aws/amazonlinux/amazonlinux:latest
+        command:
+          - sh
+          - -c
+          - |
+            echo "Installing unzip + awscli..."
+            yum install -y unzip awscli
+
+            echo "Downloading website zip from S3..."
+            aws s3 cp s3://naresh-website-bucket-1763703909/Naresh.zip /tmp/site.zip
+
+            echo "Unzipping into HTML folder..."
+            unzip /tmp/site.zip -d /tmp/html
+        volumeMounts:
+        - name: html
+          mountPath: /tmp/html
+
+      containers:
+      - name: nginx
+        image: nareshgundavelli/nginx:latest
+        ports:
+          - containerPort: 80
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+
+      volumes:
+      - name: html
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: webapp
+spec:
+  type: NodePort
+  selector:
+    app: nginx-server
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30009

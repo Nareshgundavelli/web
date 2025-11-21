@@ -1,0 +1,34 @@
+# ubuntu-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ubuntu-scripts
+  namespace: webapp
+data:
+  generate.sh: |
+    #!/bin/bash
+    set -e
+
+    if [ -z "$1" ]; then
+      echo "Usage: $0 <sitename>"
+      exit 1
+    fi
+
+    SITENAME="$1"
+    BASE="/var/www/$SITENAME"
+    mkdir -p "$BASE"
+
+    # Create dynamic index.html
+    echo "<html><head><title>$SITENAME</title></head><body><h1>Welcome $SITENAME</h1></body></html>" > "$BASE/index.html"
+
+    # Create zip
+    cd /var/www
+    zip -r "/tmp/${SITENAME}.zip" "$SITENAME"
+
+    # Upload to S3
+    if [ -z "$S3_BUCKET" ]; then
+      echo "S3_BUCKET not set"
+      exit 1
+    fi
+    aws s3 cp "/tmp/${SITENAME}.zip" "s3://${S3_BUCKET}/${SITENAME}.zip"
+    echo "Uploaded s3://${S3_BUCKET}/${SITENAME}.zip"
