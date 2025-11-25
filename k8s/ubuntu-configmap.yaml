@@ -1,4 +1,3 @@
-# ubuntu-configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -8,6 +7,9 @@ data:
   generate.sh: |
     #!/bin/bash
     set -e
+
+    # Add awscli path
+    export PATH=/opt/awscli:$PATH
 
     if [ -z "$1" ]; then
       echo "Usage: $0 <sitename>"
@@ -30,5 +32,7 @@ data:
       echo "S3_BUCKET not set"
       exit 1
     fi
+
+    # Use aws from PATH
     aws s3 cp "/tmp/${SITENAME}.zip" "s3://${S3_BUCKET}/${SITENAME}.zip"
     echo "Uploaded s3://${S3_BUCKET}/${SITENAME}.zip"

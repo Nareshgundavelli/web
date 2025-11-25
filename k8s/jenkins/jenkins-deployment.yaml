@@ -13,13 +13,28 @@ spec:
       labels:
         app: jenkins
     spec:
+      serviceAccountName: ubuntu-sa        # IRSA SERVICE ACCOUNT
       securityContext:
-        runAsUser: 0      # RUN AS ROOT
+        runAsUser: 0
         runAsGroup: 0
-      serviceAccountName: ubuntu-sa
       containers:
       - name: jenkins
         image: jenkins/jenkins:lts
+        securityContext:
+          runAsUser: 0
+        command: ["/bin/bash", "-c"]
+        args:
+          - |
+            echo "Installing AWS CLI and kubectl..." &&
+            apt-get update &&
+            apt-get install -y curl unzip &&
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" &&
+            unzip awscliv2.zip &&
+            ./aws/install &&
+            curl -LO "https://dl.k8s.io/release/v1.32.0/bin/linux/amd64/kubectl" &&
+            chmod +x kubectl && mv kubectl /usr/local/bin/ &&
+            echo "Starting Jenkins..." &&
+            exec /usr/local/bin/jenkins.sh
         ports:
         - containerPort: 8080
         - containerPort: 50000

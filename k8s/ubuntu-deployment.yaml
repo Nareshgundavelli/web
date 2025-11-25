@@ -1,4 +1,3 @@
-# ubuntu-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,18 +13,29 @@ spec:
       labels:
         app: ubuntu-generator
     spec:
-      serviceAccountName: ubuntu-sa
+      serviceAccountName: ubuntu-sa   # IRSA service account for S3 access
       containers:
       - name: ubuntu
         image: ubuntu:22.04
-        command: ["/bin/bash", "-c", "sleep infinity"]
+        command:
+          - /bin/bash
+          - -c
+          - |
+            # Install dependencies and AWS CLI, then keep container running
+            apt-get update && \
+            apt-get install -y unzip curl python3 python3-pip zip && \
+            pip3 install --no-cache-dir awscli && \
+            sleep infinity
         securityContext:
           runAsUser: 0
+        env:
+          - name: S3_BUCKET
+            value: "naresh-website-bucket-1763703909"
         volumeMounts:
-        - name: scripts
-          mountPath: /opt/scripts
+          - name: scripts
+            mountPath: /opt/scripts
       volumes:
-      - name: scripts
-        configMap:
-          name: ubuntu-scripts
-          defaultMode: 0777
+        - name: scripts
+          configMap:
+            name: ubuntu-scripts
+            defaultMode: 0777

@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ubuntu-generator-job
+  namespace: webapp
+spec:
+  template:
+    metadata:
+      labels:
+        app: ubuntu-generator
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: ubuntu-generator
+        image: ubuntu-generator:latest
+        command: ["/opt/scripts/generate.sh"]
+        args: ["CLIENT_NAME_PLACEHOLDER"]

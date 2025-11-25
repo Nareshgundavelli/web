@@ -3,15 +3,15 @@
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": [
-        "s3:PutObject",
-        "s3:GetObject",
-        "s3:ListBucket"
-      ],
-      "Resource": [
-        "arn:aws:s3:::naresh-website-bucket-1763703909",
-        "arn:aws:s3:::naresh-website-bucket-1763703909/*"
-      ]
+      "Principal": {
+        "Federated": "arn:aws:iam::281173775757:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/XXXXXXXXXXXX"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "oidc.eks.us-east-1.amazonaws.com/id/EEAB676C36EC368AFE6C64425D694E1B:sub": "system:serviceaccount:webapp:ubuntu-sa"
+        }
+      }
     }
   ]
 }
